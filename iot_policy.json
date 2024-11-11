@@ -26,10 +26,6 @@
       "Action": "greengrass:*",
       "Resource": "*"
     },
-    {
-      "Effect": "Allow",
-      "Action": "iot:AssumeRoleWithCertificate",
-      "Resource": "arn:aws:iot:us-east-1:123532543424:rolealias/GreengrassCoreTokenExchangeRoleAlias"
-    }
+    
   ]
 }
