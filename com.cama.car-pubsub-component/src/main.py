@@ -67,8 +67,21 @@ class MyAwsGreengrassV2Component:
                     f"Published max CO2 {co2_val} for vehicle {vehicle_id} to topic {publish_topic}"
                 )
 
-                # send data to firehose
-                self.send_data_to_firehose(result_message)
+            # send data to firehose
+            analysis_data = {
+                "vehicle_id": message_payload.get("vehicle_id"),
+                "timestep_time": message_payload.get("timestep_time"),
+                "vehicle_CO": message_payload.get("vehicle_CO"),
+                "vehicle_CO2": message_payload.get("vehicle_CO2"),
+                "vehicle_HC": message_payload.get("vehicle_HC"),
+                "vehicle_eclass": message_payload.get("vehicle_eclass"),
+                "vehicle_electricity": message_payload.get("vehicle_electricity"),
+                "vehicle_fuel": message_payload.get("vehicle_fuel"),
+                "vehicle_noise": message_payload.get("vehicle_noise"),
+                "vehicle_speed": message_payload.get("vehicle_speed"),
+                "vehicle_type": message_payload.get("vehicle_type"),
+            }
+            self.send_data_to_firehose(analysis_data)
 
         except Exception as e:
             logger.error(f"Error processing message: {e}")
@@ -76,12 +89,11 @@ class MyAwsGreengrassV2Component:
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
     def send_data_to_firehose(self, data):
         try:
-            firehose_record = json.dumps(data) + "\n"  # Newline delimiter
-            response = self.firehose_client.put_record(
+            firehose_response = self.firehose_client.put_record(
                 DeliveryStreamName=self.firehose_stream_name,
-                Record={"Data": firehose_record},
+                Record={"Data": json.dumps(data) + "\n"},
             )
-            logger.info(f"Sent data to Firehose: {response}")
+            logger.info(f"Sent data to Firehose: {firehose_response}")
         except Exception as e:
             logger.error(f"Failed to send data to Firehose: {e}")
             raise e

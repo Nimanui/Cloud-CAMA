@@ -32,6 +32,13 @@ cp -Rf aws-greengrass-labs-iot-pubsub-sdk-for-python/samples/gg-pubsub-sdk-compo
 cd $MY_COMPONENT_NAME/src
 ```
 
+- build and publish
+```
+gdk component build
+gdk component publish
+```
+
+
 ## Run emulator
 ```bash
 pip3 install AWSIoTPythonSDK pandas
@@ -42,13 +49,19 @@ python3 lab4_emulator_client.py
 `sudo tail -f /greengrass/v2/logs/com.cama.car-pubsub-component.log`
 
 # Athena
-## Athena Query
+## Athena Query Example
+Simple query to get all data:
+```sql
+SELECT * FROM "AwsDataCatalog"."cama_emission_data_db"."raw_data" limit 10;
+```
+Custom query to get specific fields:
 ```sql
 SELECT
-  vehicle_id, max_co2,
+  vehicle_id, vehicle_co2, vehicle_speed, vehicle_type,
   partition_0 AS year,
   partition_1 AS month,
   partition_2 AS day,
   partition_3 AS hour
-FROM parquet_raw_data LIMIT 10;
+FROM raw_data LIMIT 10;
 ```
+
