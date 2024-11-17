@@ -2,6 +2,8 @@ import sys
 import json
 import time
 import logging
+import boto3
+import backoff
 from awsiot.greengrasscoreipc import connect
 from awsiot.greengrasscoreipc.model import (
     SubscribeToIoTCoreRequest,
@@ -11,7 +13,7 @@ from awsiot.greengrasscoreipc.model import (
     UnauthorizedError,
 )
 
-# logging
+# initi logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,10 @@ class MyAwsGreengrassV2Component:
 
         # track max CO2 per vehicle
         self.max_co2_per_vehicle = {}
+
+        # firehose client
+        self.firehose_client = boto3.client("firehose", region_name="us-east-1")
+        self.firehose_stream_name = "CamaEmissionDataStream"
 
     def subscribe_to_topic(self, topic):
         request = SubscribeToIoTCoreRequest()
@@ -46,11 +52,10 @@ class MyAwsGreengrassV2Component:
 
         try:
             message_payload = json.loads(payload.decode("utf-8"))
-            # message_payload
             vehicle_id = message_payload.get("vehicle_id")
             co2_val = float(message_payload.get("vehicle_CO2"))
 
-            # Update max CO2 for this vehicle
+            # update max CO2 for this vehicle
             current_max = self.max_co2_per_vehicle.get(vehicle_id, 0)
             if co2_val > current_max:
                 self.max_co2_per_vehicle[vehicle_id] = co2_val
@@ -62,8 +67,24 @@ class MyAwsGreengrassV2Component:
                     f"Published max CO2 {co2_val} for vehicle {vehicle_id} to topic {publish_topic}"
                 )
 
+                # send data to firehose
+                self.send_data_to_firehose(result_message)
+
         except Exception as e:
             logger.error(f"Error processing message: {e}")
+
+    @backoff.on_exception(backoff.expo, Exception, max_tries=5)
+    def send_data_to_firehose(self, data):
+        try:
+            firehose_record = json.dumps(data) + "\n"  # Newline delimiter
+            response = self.firehose_client.put_record(
+                DeliveryStreamName=self.firehose_stream_name,
+                Record={"Data": firehose_record},
+            )
+            logger.info(f"Sent data to Firehose: {response}")
+        except Exception as e:
+            logger.error(f"Failed to send data to Firehose: {e}")
+            raise e
 
     def publish_message(self, message, topic):
         request = PublishToIoTCoreRequest()
@@ -101,7 +122,7 @@ class StreamHandler:
 
 
 if __name__ == "__main__":
-    # run
+    # run the component
     component = MyAwsGreengrassV2Component()
     try:
         while True:
