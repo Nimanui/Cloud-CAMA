@@ -1,0 +1,68 @@
+{
+  "RecipeFormatVersion": "2020-01-25",
+  "ComponentName": "com.cama.car-pubsub-component",
+  "ComponentVersion": "1.0.5",
+  "ComponentDescription": "Car emission data processor.",
+  "ComponentPublisher": "Ahmad Albarqawi <barqawicloud@gmail.com>",
+  "ComponentConfiguration": {
+    "DefaultConfiguration": {
+      "GGV2PubSubSdkConfig": {
+        "base-pubsub-topic": "vehicle/emission",
+        "ipc-subscribe-topics": [],
+        "mqtt-subscribe-topics": ["vehicle/emission/data"]
+      },
+      "accessControl": {
+        "aws.greengrass.ipc.pubsub": {
+          "com.cama.car-pubsub-component:pubsub:1": {
+            "policyDescription": "Allows access to publish/subscribe to all topics through IPC",
+            "operations": [
+              "aws.greengrass#PublishToTopic",
+              "aws.greengrass#SubscribeToTopic"
+            ],
+            "resources": ["*"]
+          }
+        },
+        "aws.greengrass.ipc.mqttproxy": {
+          "com.cama.car-pubsub-component:mqttproxy:1": {
+            "policyDescription": "Allows access to publish/subscribe to all topics through MQTT",
+            "operations": [
+              "aws.greengrass#PublishToIoTCore",
+              "aws.greengrass#SubscribeToIoTCore"
+            ],
+            "resources": ["*"]
+          }
+        }
+      }
+    }
+  },
+  "Manifests": [
+    {
+      "Platform": {
+        "os": "linux"
+      },
+      "Artifacts": [
+        {
+          "URI": "s3://aws-greengrass-component-artefacts/com.cama.car-pubsub-component/src.zip",
+          "Unarchive": "ZIP"
+        }
+      ],
+      "Lifecycle": {
+        "Install": {
+          "Script": "python3 -m pip install awsgreengrasspubsubsdk pandas",
+          "Timeout": 300,
+          "RunAs": {
+            "PosixUser": "root"
+          }
+        },
+        "Run": {
+          "Script": "python3 -u {artifacts:decompressedPath}/src/main.py",
+          "RequiresPrivilege": false,
+          "RunAs": {
+            "PosixUser": "ggc_user:ggc_group"
+          }
+        }
+      }
+    }
+  ]
+}
+

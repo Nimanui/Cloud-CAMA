@@ -1,0 +1,16 @@
+{
+  "component" :{
+    "com.cama.car-pubsub-component": {
+      "author": "Ahmad Albarqawi",
+      "version": "1.0.5",
+      "build": {
+        "build_system" :"zip"
+      },
+      "publish": {
+        "bucket": "aws-greengrass-component-artefacts",
+        "region": "us-east-1"
+      }
+    }
+  },
+  "gdk_version": "1.0.0"
+}
