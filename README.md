@@ -38,5 +38,3 @@ python3 lab4_emulator_client.py
 
 ## Track the logs
 `sudo tail -f /greengrass/v2/logs/com.cama.car-pubsub-component.log`
-
-
