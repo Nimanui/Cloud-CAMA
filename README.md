@@ -1,8 +1,10 @@
 # Cloud-CAMA
 
+# Components
+
 ## Component Commands
 - Create core component:
-```
+```bash
 sudo -E java -Droot="/greengrass/v2" -Dlog.store=FILE \
   -jar ./GreengrassInstaller/lib/Greengrass.jar \
   --aws-region us-east-1 \
@@ -22,7 +24,7 @@ sudo -E java -Droot="/greengrass/v2" -Dlog.store=FILE \
 
 
 - Clone and prepare the component:
-```
+```bash
 git clone https://github.com/awslabs/aws-greengrass-labs-iot-pubsub-sdk-for-python.git
 
 MY_COMPONENT_NAME=com.cama.car-pubsub-component
@@ -31,10 +33,22 @@ cd $MY_COMPONENT_NAME/src
 ```
 
 ## Run emulator
-```
+```bash
 pip3 install AWSIoTPythonSDK pandas
 python3 lab4_emulator_client.py
 ```
 
 ## Track the logs
 `sudo tail -f /greengrass/v2/logs/com.cama.car-pubsub-component.log`
+
+# Athena
+## Athena Query
+```sql
+SELECT
+  vehicle_id, max_co2,
+  partition_0 AS year,
+  partition_1 AS month,
+  partition_2 AS day,
+  partition_3 AS hour
+FROM parquet_raw_data LIMIT 10;
+```
