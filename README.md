@@ -65,3 +65,5 @@ SELECT
 FROM raw_data LIMIT 10;
 ```
 
+## Lab Components Blueprint
+<img src="./screenshots/Lab 4 - IoT Architecture.jpg" width="800px">
